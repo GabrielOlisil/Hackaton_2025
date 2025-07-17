@@ -1,0 +1,11 @@
+[project]
+name = "hackathon2025-1"
+version = "0.1.0"
+description = "Aplicação de Integração de Produtos localizaveis em comércios locais"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django~=5.0",
+    "googlemaps>=4.10.0",
+    "python-dotenv>=1.1.1",
+]

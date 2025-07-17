@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Comércios em Ariquemes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilo para o mapa e a área de detalhes */
+        #map {
+            height: 60vh;
+            /* O mapa ocupará 60% da altura da tela */
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #place-details {
+            height: 25vh;
+            overflow-y: auto;
+            /* Adiciona barra de rolagem se o conteúdo for grande */
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container mt-4">
+        <h1 class="mb-4 text-center">Mapa de Comércios em Ariquemes</h1>
+
+        <div id="map"></div>
+
+        <div id="place-details">
+            <p class="text-muted text-center">Clique em um marcador no mapa para ver os detalhes</p>
+        </div>
+    </main>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAo8nGPBaqztHCC6Ktyt8jdIUOUjikz1SM&callback=initMap">
+        </script>
+
+    <script>
+        // --- NOVA FUNÇÃO AUXILIAR ---
+        // Função para traduzir e formatar os tipos de estabelecimentos
+        function formatPlaceTypes(types) {
+            const traducoes = {
+                clothing_store: 'Loja de Roupas',
+                supermarket: 'Supermercado',
+                grocery_or_supermarket: 'Mercado',
+                pharmacy: 'Farmácia',
+                car_repair: 'Oficina Mecânica',
+                restaurant: 'Restaurante',
+                store: 'Loja',
+                bar: 'Bar',
+                cafe: 'Cafeteria',
+                bakery: 'Padaria',
+                hardware_store: 'Loja de Ferragens',
+                shoe_store: 'Sapataria',
+                electronics_store: 'Loja de Eletrônicos',
+                point_of_interest: 'Ponto de Interesse'
+            };
+
+            let tiposFormatados = [];
+            for (const type of types) {
+                if (traducoes[type]) {
+                    tiposFormatados.push(traducoes[type]);
+                }
+            }
+
+            // Retorna os 2 tipos mais relevantes, ou "Comércio" se nenhum for traduzido
+            if (tiposFormatados.length > 0) {
+                return tiposFormatados.slice(0, 2).join(' / ');
+            }
+            return 'Comércio';
+        }
+
+        async function initMap() {
+            const ariquemesCoords = { lat: -9.9133, lng: -63.0410 };
+
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: ariquemesCoords,
+            });
+
+            const detailsDiv = document.getElementById("place-details");
+
+            try {
+                const response = await fetch('/buscar/api/list/');
+                const data = await response.json();
+
+                if (data.error) {
+                    detailsDiv.innerHTML = `<p class="text-danger">Erro ao buscar dados: ${data.error}</p>`;
+                    return;
+                }
+
+                data.places.forEach(place => {
+                    const marker = new google.maps.Marker({
+                        position: place.location,
+                        map: map,
+                        title: place.name,
+                    });
+
+                    marker.addListener("click", () => {
+                        // --- ATUALIZAÇÃO DA EXIBIÇÃO ---
+                        // Chamamos nossa nova função para formatar os tipos
+                        const tipoDoLugar = formatPlaceTypes(place.types);
+
+                        detailsDiv.innerHTML = `
+                            <h4>${place.name}</h4>
+                            <p><strong>Tipo:</strong> <span class="badge bg-secondary">${tipoDoLugar}</span></p>
+                            <p><strong>Endereço:</strong> ${place.vicinity}</p>
+                            <p><strong>Avaliação:</strong> ${place.rating} (${place.user_ratings_total} avaliações)</p>
+                        `;
+                    });
+                });
+
+            } catch (error) {
+                console.error("Falha ao buscar locais:", error);
+                detailsDiv.innerHTML = `<p class="text-danger">Não foi possível carregar os locais. Verifique o console.</p>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
