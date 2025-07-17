@@ -9,5 +9,4 @@ urlpatterns = [
 
     # --- NOVA ROTA PARA A API ---
     # Rota para devolver os dados dos locais em JSON
-    path('api/list/', views.list_places_api, name='api_list_places'),
 ]
