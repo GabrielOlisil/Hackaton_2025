@@ -20,6 +20,19 @@
 
 <body>
     <main class="container-fluid mt-2">
+        <div class="col-md-4">
+            <h2 class="h4">Encontre Produtos em Ariquemes</h2>
+
+            <form method="GET" action="{% url 'search_page' %}" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Digite o nome de um produto..."
+                        value="{{ query }}">
+                    <button class="btn btn-primary" type="submit">Buscar</button>
+                </div>
+            </form>
+
+
+        </div>
         <div class="row">
             <div class="col-md-4">
                 <h2 class="h4">Comércios em Ariquemes</h2>
