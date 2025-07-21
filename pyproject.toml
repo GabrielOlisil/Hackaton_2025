@@ -5,8 +5,15 @@ description = "Aplicação de Integração de Produtos localizaveis em comércio
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cryptography>=45.0.5",
+    "dj-database-url>=3.0.1",
     "django~=5.0",
+    "django-allauth>=65.10.0",
+    "django-apscheduler>=0.7.0",
     "googlemaps>=4.10.0",
     "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.10",
+    "pyjwt>=2.10.1",
     "python-dotenv>=1.1.1",
+    "whitenoise>=6.9.0",
 ]

@@ -41,8 +41,54 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'places.apps.PlacesConfig'
+    'places.apps.PlacesConfig',
+    'django.contrib.sites',
+
+     # Allauth
+    'allauth',               # <-- ADICIONE
+    'allauth.account',       # <-- ADICIONE
+    'allauth.socialaccount', # <-- ADICIONE
+    # Provedor Google (específico)
+    'allauth.socialaccount.providers.google', # <-- ADICIONE
+
+    #scheduler
+    'django_apscheduler',
 ]
+
+# Adicione isso abaixo de INSTALLED_APPS
+AUTHENTICATION_BACKENDS = [
+    # Necessário para logar no admin com username
+    'django.contrib.auth.backends.ModelBackend',
+
+    # Backend de autenticação do allauth
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+# Adicione isso em qualquer lugar do settings.py
+SITE_ID = 1
+
+# Redireciona para a página principal após o login
+LOGIN_REDIRECT_URL = 'search_page'
+LOGOUT_REDIRECT_URL = 'search_page'
+
+# Adicione no final do settings.py
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # As chaves que você vai pegar do Google Cloud Console
+        'APP': {
+            'client_id': '36040946751-53b6jpii65t5kt1rdcbb0smh5k7r4dbf.apps.googleusercontent.com',
+            'secret': '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',
+            'key': '' # Deixe vazio
+        },
+        # O que queremos pedir ao usuário
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,6 +98,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -79,8 +126,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'app',     # Ex: hackathondb
+        'USER': 'postgres',   # Ex: postgres
+        'PASSWORD': 'root',
+        'HOST': 'localhost',             # Ou o endereço do seu servidor de banco de dados
+        'PORT': '5432',
     }
 }
 
@@ -128,3 +179,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MAPS_API_KEY = os.getenv("MAPS_API_KEY")
+
+ACCOUNT_LOGOUT_ON_GET = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+

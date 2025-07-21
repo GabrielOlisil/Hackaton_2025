@@ -1,0 +1,110 @@
+{% extends "places/base.html" %}
+
+{% block title %}Adicionar Contribuição - Busca Preço{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilos para a caixa de resultados do autocomplete */
+  .autocomplete-results {
+    position: relative;
+  }
+
+  .autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+  }
+
+  .autocomplete-items div:hover {
+    background-color: #e9e9e9;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title">Adicionar um Produto a um Comércio</h3>
+        <p class="card-text">Obrigado por colaborar! Preencha os dados abaixo.</p>
+        <hr>
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.product_name.id_for_label }}" class="form-label">{{ form.product_name.label }}</label>
+            {{ form.product_name }}
+            {% for error in form.product_name.errors %}
+            <div class="alert alert-danger p-2 mt-1">{{ error }}</div>
+            {%endfor %}
+          </div>
+
+          <div class="mb-3 autocomplete-results">
+            <label for="establishment-search" class="form-label">Onde você encontrou?</label>
+            <input type="text" id="establishment-search" class="form-control"
+              placeholder="Comece a digitar o nome do comércio...">
+            <div id="establishment-results" class="autocomplete-items"></div>
+          </div>
+
+          {{ form.establishment }}
+          {% for error in form.establishment.errors %}
+          <div class="alert alert-danger p-2 mt-1">Por favor, selecione um
+            estabelecimento da lista.</div>
+          {% endfor %}
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success">Salvar Contribuição</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const searchInput = document.getElementById('establishment-search');
+  const resultsBox = document.getElementById('establishment-results');
+  const hiddenInput = document.getElementById('{{ form.establishment.id_for_label }}');
+
+  searchInput.addEventListener('keyup', function () {
+    const query = searchInput.value;
+    resultsBox.innerHTML = ''; // Limpa resultados antigos
+
+    if (query.length < 3) {
+      return;
+    }
+
+    fetch(`/api/search-establishments/?q=${query}`)
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.textContent = item.name;
+          div.addEventListener('click', function () {
+            searchInput.value = item.name; // Preenche o campo de texto
+            hiddenInput.value = item.id;  // Preenche o campo oculto com o ID
+            resultsBox.innerHTML = '';    // Limpa a caixa de resultados
+          });
+          resultsBox.appendChild(div);
+        });
+      });
+  });
+</script>
+{% endblock %}

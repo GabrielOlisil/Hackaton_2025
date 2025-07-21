@@ -1,0 +1,81 @@
+{% extends "places/base.html" %}
+
+{% block title %}{{ product.name }} - Locais Encontrados{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3>Locais que vendem: <span class="text-success">{{ product.name }}</span></h3>
+  <a href="{% url 'search_page' %}">&larr; Voltar para a busca</a>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="list-group places-list overflow-auto" style="max-height: 70vh;">
+      {% for sighting in sightings %}
+      <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ sighting.establishment.name }}</h5>
+          <a href="{% url 'like_sighting' sighting.id %}"
+            class="btn btn-sm {% if user in sighting.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            <i class="bi bi-hand-thumbs-up-fill"></i>
+            <span class="badge bg-light text-dark ms-1">{{ sighting.total_likes }}</span>
+          </a>
+        </div>
+        <p class="mb-1 text-muted small">{{ sighting.establishment.address }}</p>
+        <small class="text-muted">Adicionado por: {{ sighting.created_by.username|default:'Anônimo' }}</small>
+      </div>
+      {% empty %}
+      <p class="p-3 text-muted">Nenhum local cadastrado para este produto ainda.</p>
+      {% endfor %}
+    </div>
+
+    <div class="mt-3 p-3 bg-light border rounded">
+      <h5>Sabe de outro lugar?</h5>
+      <a href="{% url 'add_sighting' %}?product_name={{ product.name }}" class="btn btn-sm btn-secondary">
+        Informar novo local para {{ product.name }}
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div id="map"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAo8nGPBaqztHCC6Ktyt8jdIUOUjikz1SM&callback=initMap&libraries=marker&v=beta"
+  async defer></script>
+<script>
+  function initMap() {
+    const ariquemes = { lat: -9.9133, lng: -63.0411 };
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 14,
+      center: ariquemes,
+      mapId: 'DEMO_MAP_ID'
+    });
+
+    const locations = JSON.parse('{{ map_data_json|escapejs }}');
+    const infoWindow = new google.maps.InfoWindow();
+
+    if (locations.length > 0) {
+      // Centraliza o mapa no primeiro resultado se houver algum
+      map.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+    }
+
+    locations.forEach(loc => {
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        map: map,
+        position: { lat: loc.lat, lng: loc.lng },
+        title: loc.name,
+      });
+
+      marker.addListener('gmp-click', () => {
+        infoWindow.setContent(`<div><strong>${loc.name}</strong><br>${loc.address}<br>Confirmado por: <strong>${loc.likes}</strong> usuários.</div>`);
+        infoWindow.open(map, marker);
+      });
+    });
+  }
+</script>
+{% endblock %}
